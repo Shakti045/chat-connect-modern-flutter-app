@@ -1,4 +1,5 @@
 // import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +11,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:chatconnect/screens/auth.dart';
 import 'package:chatconnect/screens/home.dart';
 import 'firebase_options.dart';
+import 'package:intl/intl.dart';
 
 final kdarkcolorscheeme =
     ColorScheme.fromSeed(brightness: Brightness.dark, seedColor: Colors.black);
@@ -40,12 +42,41 @@ class MyApp extends StatefulWidget {
   State<MyApp> createState() => _MyAppState();
 }
 
-class _MyAppState extends State<MyApp> {
-  // @override
-  // void initState() {
+class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
 
-  //   super.initState();
-  // }
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (FirebaseAuth.instance.currentUser != null) {
+      if (state == AppLifecycleState.resumed) {
+        FirebaseFirestore.instance
+            .collection('users')
+            .doc(FirebaseAuth.instance.currentUser!.uid)
+            .update({'status': 'online'});
+      } else if (state == AppLifecycleState.paused) {
+        final now = DateTime.now();
+        final formatter = DateFormat('hh:mm a');
+        FirebaseFirestore.instance
+            .collection('users')
+            .doc(FirebaseAuth.instance.currentUser!.uid)
+            .update({
+          'status': 'last seen at ${formatter.format(now).toLowerCase()}'
+        });
+        onUserLogout();
+      }
+    }
+    super.didChangeAppLifecycleState(state);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -78,48 +109,51 @@ class _MyAppState extends State<MyApp> {
   }
 }
 
-
-void onUserLogin() async{
+void onUserLogin() async {
+  FirebaseFirestore.instance
+      .collection('users')
+      .doc(FirebaseAuth.instance.currentUser!.uid)
+      .update({'status': 'online'});
   // final currentuser=await FirebaseFirestore.instance.collection('users').doc(FirebaseAuth.instance.currentUser!.uid).get();
 
   /// 1.2.1. initialized ZegoUIKitPrebuiltCallInvitationService
   /// when app's user is logged in or re-logged in
   /// We recommend calling this method as soon as the user logs in to your app.
   ZegoUIKitPrebuiltCallInvitationService().init(
-      appID: 1490707843 /*input your AppID*/,
-      appSign:
-          "51531ef72fd9d57af8e8d79856f3a517b5b3bf686d68e276cf4bed0cb7a72a26" /*input your AppSign*/,
-      userID: FirebaseAuth.instance.currentUser!.uid,
-      userName: FirebaseAuth.instance.currentUser!.phoneNumber!,
-      notifyWhenAppRunningInBackgroundOrQuit:true,
-      plugins: [ZegoUIKitSignalingPlugin()],
-      // requireConfig: (ZegoCallInvitationData data) {
-      //   var config = (data.invitees.length > 1)
-      //       ? ZegoCallType.videoCall == data.type
-      //           ? ZegoUIKitPrebuiltCallConfig.groupVideoCall()
-      //           : ZegoUIKitPrebuiltCallConfig.groupVoiceCall()
-      //       : ZegoCallType.videoCall == data.type
-      //           ? ZegoUIKitPrebuiltCallConfig.oneOnOneVideoCall()
-      //           : ZegoUIKitPrebuiltCallConfig.oneOnOneVoiceCall();
+    appID: 1490707843 /*input your AppID*/,
+    appSign:
+        "51531ef72fd9d57af8e8d79856f3a517b5b3bf686d68e276cf4bed0cb7a72a26" /*input your AppSign*/,
+    userID: FirebaseAuth.instance.currentUser!.uid,
+    userName: FirebaseAuth.instance.currentUser!.phoneNumber!,
+    notifyWhenAppRunningInBackgroundOrQuit: true,
+    plugins: [ZegoUIKitSignalingPlugin()],
+    // requireConfig: (ZegoCallInvitationData data) {
+    //   var config = (data.invitees.length > 1)
+    //       ? ZegoCallType.videoCall == data.type
+    //           ? ZegoUIKitPrebuiltCallConfig.groupVideoCall()
+    //           : ZegoUIKitPrebuiltCallConfig.groupVoiceCall()
+    //       : ZegoCallType.videoCall == data.type
+    //           ? ZegoUIKitPrebuiltCallConfig.oneOnOneVideoCall()
+    //           : ZegoUIKitPrebuiltCallConfig.oneOnOneVoiceCall();
 
-      //   config.avatarBuilder = (BuildContext context, Size size,
-      //       ZegoUIKitUser? user, Map extraInfo) {
-      //     return user != null
-      //         ? Container(
-      //             decoration: BoxDecoration(
-      //               shape: BoxShape.circle,
-      //               image: DecorationImage(
-      //                 image: NetworkImage(
-      //                   currentuser.exists?currentuser['profilephoto']:null,
-      //                 ),
-      //               ),
-      //             ),
-      //           )
-      //         : const SizedBox();
-      //   };
-      //   return config;
-      // }
-      );
+    //   config.avatarBuilder = (BuildContext context, Size size,
+    //       ZegoUIKitUser? user, Map extraInfo) {
+    //     return user != null
+    //         ? Container(
+    //             decoration: BoxDecoration(
+    //               shape: BoxShape.circle,
+    //               image: DecorationImage(
+    //                 image: NetworkImage(
+    //                   currentuser.exists?currentuser['profilephoto']:null,
+    //                 ),
+    //               ),
+    //             ),
+    //           )
+    //         : const SizedBox();
+    //   };
+    //   return config;
+    // }
+  );
 }
 
 /// on App's user logout
