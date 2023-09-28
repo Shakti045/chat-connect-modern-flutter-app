@@ -37,6 +37,10 @@ class _OldMessageState extends State<OldMessage> {
 
   @override
   Widget build(BuildContext context) {
+    final collectioninstace = FirebaseFirestore.instance
+        .collection('conversations')
+        .doc(widget.conversationid)
+        .collection('messages');
     return StreamBuilder(
         stream: FirebaseFirestore.instance
             .collection('conversations')
@@ -79,28 +83,44 @@ class _OldMessageState extends State<OldMessage> {
                               : CrossAxisAlignment.start,
                       children: [
                         ElevatedButton.icon(
-                            onPressed: () {
-                              Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (BuildContext ctx) => VideoApp(
-                                      url: messages[index]['mediaurl'])));
-                            },
-                            icon: const Icon(
-                              Icons.play_arrow,
-                              size: 40,
-                            ),
-                            label:const Text('Video'),
-                            )
+                          onPressed: () {
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (BuildContext ctx) => VideoApp(
+                                    url: messages[index]['mediaurl'])));
+                          },
+                          icon: const Icon(
+                            Icons.play_arrow,
+                            size: 40,
+                          ),
+                          label: const Text('Video'),
+                        )
                       ],
                     );
-                  } else if (mediatype == 'jpg' || mediatype=='pdf') {
+                  } else if (mediatype == 'jpg' || mediatype == 'pdf') {
                     return MediaMessage(
                         mediaurl: messages[index]['mediaurl'],
-                        isme: messages[index]['sender'] == currentuserid,medaitype:mediatype);
-                  } 
+                        isme: messages[index]['sender'] == currentuserid,
+                        medaitype: mediatype);
+                  }
                 }
-                return MessageBubble.next(
-                    message: messages[index]['message'],
-                    isMe: messages[index]['sender'] == currentuserid);
+                return messages[index]['sender'] == currentuserid
+                    ? Dismissible(
+                        key: ValueKey(messages[index].id),
+                        confirmDismiss: (diretion) async {
+                          if (diretion == DismissDirection.startToEnd) {
+                            await collectioninstace
+                                .doc(messages[index].id)
+                                .delete();
+                            return true;
+                          } else {
+                            return false;
+                          }
+                        },
+                        child: MessageBubble.next(
+                            message: messages[index]['message'], isMe: true),
+                      )
+                    : MessageBubble.next(
+                        message: messages[index]['message'], isMe: false);
               });
         });
   }

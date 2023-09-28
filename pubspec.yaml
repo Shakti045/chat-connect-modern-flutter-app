@@ -45,7 +45,7 @@ dependencies:
   firebase_storage: ^11.2.7
   file_picker: ^5.5.0
   path_provider: ^2.1.1
-  zego_uikit_prebuilt_call: ^3.15.1
+  zego_uikit_prebuilt_call: ^3.15.2
   zego_uikit_signaling_plugin: ^2.5.2
   flutter_riverpod: ^2.4.0
   flutter_file_downloader: ^1.1.4

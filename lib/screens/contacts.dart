@@ -74,6 +74,7 @@ class _ContactsState extends State<Contacts> {
                               databaseusers[userindex]['userid'],
                               databaseusers[userindex]['profilephoto'],
                               contacts[index].phones[0].normalizedNumber,
+                              'new_conversation'
                             )));
                   }
                 },

@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 
-// A MessageBubble for showing a single chat message on the ChatScreen.
 class MessageBubble extends StatelessWidget {
-  // Create a message bubble which is meant to be the first in the sequence.
   const MessageBubble.first({
     super.key,
     required this.userImage,
@@ -11,7 +9,6 @@ class MessageBubble extends StatelessWidget {
     required this.isMe,
   }) : isFirstInSequence = true;
 
-  // Create a amessage bubble that continues the sequence.
   const MessageBubble.next({
     super.key,
     required this.message,
@@ -20,23 +17,16 @@ class MessageBubble extends StatelessWidget {
         userImage = null,
         username = null;
 
-  // Whether or not this message bubble is the first in a sequence of messages
-  // from the same user.
-  // Modifies the message bubble slightly for these different cases - only
-  // shows user image for the first message from the same user, and changes
-  // the shape of the bubble for messages thereafter.
+
   final bool isFirstInSequence;
 
-  // Image of the user to be displayed next to the bubble.
-  // Not required if the message is not the first in a sequence.
   final String? userImage;
 
-  // Username of the user.
-  // Not required if the message is not the first in a sequence.
+
   final String? username;
   final String message;
 
-  // Controls how the MessageBubble will be aligned.
+
   final bool isMe;
 
   @override
@@ -48,7 +38,7 @@ class MessageBubble extends StatelessWidget {
         if (userImage != null)
           Positioned(
             top: 15,
-            // Align user image to the right, if the message is from me.
+
             right: isMe ? 0 : null,
             child: CircleAvatar(
               backgroundImage: NetworkImage(
@@ -92,9 +82,10 @@ class MessageBubble extends StatelessWidget {
                   // The "speech" box surrounding the message.
                   Container(
                     decoration: BoxDecoration(
-                      color: isMe
+                      color:isMe
                           ? Colors.grey[300]
                           : Theme.of(context).colorScheme.background,
+                   
                       // Only show the message bubble's "speaking edge" if first in
                       // the chain.
                       // Whether the "speaking edge" is on the left or right depends
