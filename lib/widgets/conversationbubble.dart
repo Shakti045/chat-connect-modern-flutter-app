@@ -7,36 +7,35 @@ import 'package:flutter/material.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class ConversationBubble extends ConsumerStatefulWidget {
+// class ConversationBubble extends ConsumerWidget {
+//   const ConversationBubble(
+//       {super.key, required this.otheruserid, required this.lastupdated});
+
+//   final String otheruserid;
+//   final Timestamp lastupdated;
+
+//  @override
+//   Widget build(BuildContext context, WidgetRef ref) {
+
+//   }
+// }
+
+class ConversationBubble extends ConsumerWidget {
   const ConversationBubble(
       {super.key, required this.otheruserid, required this.lastupdated});
 
   final String otheruserid;
   final Timestamp lastupdated;
 
-  @override
-  ConsumerState<ConversationBubble> createState() {
-    return _ConversationBubbleState();
-  }
-}
-
-class _ConversationBubbleState extends ConsumerState<ConversationBubble> {
-  late Future futuremaker;
   Future getdetails() async {
     return await FirebaseFirestore.instance
         .collection('users')
-        .doc(widget.otheruserid)
+        .doc(otheruserid)
         .get();
   }
 
   @override
-  void initState() {
-    futuremaker = getdetails();
-    super.initState();
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, ref) {
     List<Contact> contacts = ref.watch(contactProvider);
 
     String helper(details) {
@@ -50,7 +49,7 @@ class _ConversationBubbleState extends ConsumerState<ConversationBubble> {
     }
 
     return FutureBuilder(
-        future: futuremaker,
+        future: getdetails(),
         builder: (BuildContext context, snapshot) {
           if (snapshot.hasData) {
             final details = snapshot.data;
@@ -79,7 +78,7 @@ class _ConversationBubbleState extends ConsumerState<ConversationBubble> {
                         Navigator.of(context).push(MaterialPageRoute(
                             builder: (BuildContext context) => Chat(
                                 displayname,
-                                widget.otheruserid,
+                                otheruserid,
                                 details!['profilephoto'],
                                 details['number'],
                                 conversationid)));
@@ -109,6 +108,10 @@ class _ConversationBubbleState extends ConsumerState<ConversationBubble> {
                       if (!snapshot.hasData) {
                         return const Text("");
                       }
+                      if (snapshot.data!.docs.isEmpty) {
+                        return const Text('Statrted conversation',
+                            style:  TextStyle(color: Colors.white38));
+                      }
                       return Text(
                         snapshot.data!.docs[0]['message'],
                         style: const TextStyle(color: Colors.white38),
@@ -118,7 +121,7 @@ class _ConversationBubbleState extends ConsumerState<ConversationBubble> {
                         .watch(deleteConversationStateProvider)
                         .contains(conversationid)
                     ? const Icon(Icons.check_rounded)
-                    : Text(widget.lastupdated
+                    : Text(lastupdated
                         .toDate()
                         .toLocal()
                         .toString()
